@@ -37,7 +37,7 @@ describe('toHTML()', () => {
 
   it('should convert hr box', () => {
     const input = `<lake-box name="hr"></lake-box>`;
-    const expected = '<hr />';
+    const expected = '<div class="lake-box-block lake-hr"><hr /></div>';
     expect(toHTML(input)).toBe(expected);
   });
 

@@ -3,7 +3,7 @@ type KeyValue = Record<string, string>;
 type TagHandler = (boxValue: KeyValue) => string;
 
 const config: Record<string, TagHandler> = {
-  hr: () => '<hr />',
+  hr: () => '<div class="lake-box-block lake-hr"><hr /></div>',
   image: boxValue => {
     const attrs = {
       src: boxValue.url,
