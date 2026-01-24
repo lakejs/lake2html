@@ -1,6 +1,6 @@
 {
   "name": "lake-html",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.28.1",
   "description": "A lightweight utility to convert Lake Markup Language (LML) to HTML",
   "author": "Luo Longhao <luolonghao@gmail.com>",

@@ -165,13 +165,13 @@ describe('toHTML()', () => {
     const input = `<lake-box name="custom" value="${val}"></lake-box>`;
     const expected = '<div class="foo">&lt;bar&gt;</div>';
     const rules = getDefaultBoxRenderers();
-    rules.custom = boxValue => ({
+    rules.custom = (boxValue, encode) => ({
       tagName: 'div',
       attributes: {
         class: 'foo',
       },
       isVoid: false,
-      textContent: boxValue.text,
+      innerHTML: encode(boxValue.text),
     });
     expect(toHTML(input, rules)).toBe(expected);
   });
@@ -181,13 +181,13 @@ describe('toHTML()', () => {
     const input = `<lake-box name="file" value="${val}"></lake-box>`;
     const expected = '<a href="smile.png" target="_blank">&lt;smile&gt; (1024)</a>';
     const rules = getDefaultBoxRenderers();
-    rules.file = boxValue => ({
+    rules.file = (boxValue, encode) => ({
       tagName: 'a',
       attributes: {
         href: boxValue.url,
         target: '_blank',
       },
-      textContent: `${boxValue.name} (${boxValue.size})`,
+      innerHTML: encode(`${boxValue.name} (${boxValue.size})`),
     });
     expect(toHTML(input, rules)).toBe(expected);
   });

@@ -6,7 +6,7 @@ interface BoxNode {
   tagName: string;
   attributes?: AttributeMap;
   isVoid?: boolean; // True for self-closing tags like <img />, <hr />
-  textContent?: string;
+  innerHTML?: string;
 }
 
 // Function signature for encoding HTML entities
@@ -46,19 +46,22 @@ export function getDefaultBoxRenderers(): BoxRenderRegistry {
       isVoid: true,
     }),
 
-    file: boxValue => ({
+    file: (boxValue, encode) => ({
       tagName: 'a',
       attributes: {
         href: boxValue.url,
         target: '_blank',
       },
-      textContent: boxValue.name,
+      innerHTML: encode(boxValue.name),
     }),
 
-    codeBlock: (boxValue, encode) => {
-      const langClass = `lang-${encode(boxValue.lang)}`;
-      return `<pre class="${langClass}"><code>${encode(boxValue.code)}</code></pre>`;
-    },
+    codeBlock: (boxValue, encode) => ({
+      tagName: 'pre',
+      attributes: {
+        class: `lang-${boxValue.lang}`,
+      },
+      innerHTML: `<code>${encode(boxValue.code)}</code>`,
+    }),
 
     emoji: boxValue => ({
       tagName: 'img',
@@ -73,7 +76,7 @@ export function getDefaultBoxRenderers(): BoxRenderRegistry {
 
     equation: boxValue => ({
       tagName: 'code',
-      textContent: boxValue.code,
+      innerHTML: boxValue.code,
     }),
 
     video: boxValue => ({
@@ -193,7 +196,7 @@ export function toHTML(value: string, rules?: BoxRenderRegistry): string {
           if (result.isVoid === true) {
             html += ' />';
           } else {
-            html += `>${encodeHTMLEntities(result.textContent ?? '')}</${result.tagName}>`;
+            html += `>${result.innerHTML ?? ''}</${result.tagName}>`;
           }
           return html;
         } catch (e) {
