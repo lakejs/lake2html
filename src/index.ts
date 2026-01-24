@@ -2,7 +2,7 @@
 type AttributeMap = Record<string, string>;
 
 // Structure representing the output HTML node
-interface BoxNode {
+interface BoxHTMLNode {
   tagName: string;
   attributes?: AttributeMap;
   isVoid?: boolean; // True for self-closing tags like <img />, <hr />
@@ -13,10 +13,10 @@ interface BoxNode {
 type EncodeHTMLEntities = (value: string) => string;
 
 // Function signature for encoding HTML entities
-type BoxRenderer = (boxValue: AttributeMap, encode: EncodeHTMLEntities) => BoxNode | string;
+type RenderBox = (boxValue: AttributeMap, encode: EncodeHTMLEntities) => BoxHTMLNode;
 
 // Registry of renderers for different box types
-type BoxRenderers = Record<string, BoxRenderer>;
+type BoxRenderers = Record<string, RenderBox>;
 
 /**
  * Extracts the ID from a URL.
@@ -32,7 +32,13 @@ function extractIdFromUrl(url: string): string {
  */
 export function getBoxRenderers(): BoxRenderers {
   return {
-    hr: () => '<div class="lake-box-block lake-hr"><hr /></div>',
+    hr: () => ({
+      tagName: 'div',
+      attributes: {
+        class: 'lake-box-block lake-hr',
+      },
+      innerHTML: '<hr />',
+    }),
 
     image: boxValue => ({
       tagName: 'img',
@@ -168,6 +174,22 @@ function serializeAttributes(attrs: AttributeMap): string {
 }
 
 /**
+ * Serializes a BoxHTMLNode object into a standard HTML string.
+ */
+export function toBoxHTML(node: BoxHTMLNode): string {
+  let result = `<${node.tagName}`;
+  if (node.attributes) {
+    result += ` ${serializeAttributes(node.attributes)}`;
+  }
+  if (node.isVoid === true) {
+    result += ' />';
+  } else {
+    result += `>${node.innerHTML ?? ''}</${node.tagName}>`;
+  }
+  return result;
+}
+
+/**
  * Main function to convert Lake Markup Language (LML) to standard HTML.
  * It processes custom <lake-box> tags and removes internal anchors.
  */
@@ -182,23 +204,9 @@ export function toHTML(value: string, renderers?: BoxRenderers): string {
       const render = renderers[attributes.name];
       if (render) {
         try {
-          const decodedValue = attributes.value ? JSON.parse(decodeBase64(attributes.value)) : {};
-          const result = render(decodedValue, encodeHTMLEntities);
-          // If renderer returns a raw string, return it directly
-          if (typeof result === 'string') {
-            return result;
-          }
-          // Otherwise, build the HTML tag from BoxNode
-          let html = `<${result.tagName}`;
-          if (result.attributes) {
-            html += ` ${serializeAttributes(result.attributes)}`;
-          }
-          if (result.isVoid === true) {
-            html += ' />';
-          } else {
-            html += `>${result.innerHTML ?? ''}</${result.tagName}>`;
-          }
-          return html;
+          const boxValue = attributes.value ? JSON.parse(decodeBase64(attributes.value)) : {};
+          const node = render(boxValue, encodeHTMLEntities);
+          return toBoxHTML(node);
         } catch (e) {
           console.error('Failed to parse lake-box value:', e);
         }

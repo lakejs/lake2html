@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { toHTML, getBoxRenderers } from '../src';
+import { toHTML, getBoxRenderers, toBoxHTML } from '../src';
 
 // Creates a Base64-encoded ASCII string from a string.
 function toBase64(value: string): string {
@@ -188,6 +188,22 @@ describe('toHTML()', () => {
         target: '_blank',
       },
       innerHTML: encode(`${boxValue.name} (${boxValue.size})`),
+    });
+    expect(toHTML(input, renderers)).toBe(expected);
+  });
+
+  it('should add raw data', () => {
+    const val = createBoxValue({ text: '<bar>' });
+    const input = `<lake-box name="custom" value="${val}"></lake-box>`;
+    const expected = '<div class="foo">&lt;bar&gt;</div>';
+    const renderers = getBoxRenderers();
+    renderers.custom = (boxValue, encode) => ({
+      tagName: 'div',
+      attributes: {
+        class: 'foo',
+      },
+      isVoid: false,
+      innerHTML: encode(boxValue.text),
     });
     expect(toHTML(input, renderers)).toBe(expected);
   });
