@@ -176,4 +176,20 @@ describe('toHTML()', () => {
     expect(toHTML(input, rules)).toBe(expected);
   });
 
+  it('should override the existing rules', () => {
+    const val = createBoxValue({ url: 'smile.png', name: '<smile>', size: 1024 });
+    const input = `<lake-box name="file" value="${val}"></lake-box>`;
+    const expected = '<a href="smile.png" target="_blank">&lt;smile&gt; (1024)</a>';
+    const rules = getDefaultBoxRenderers();
+    rules.file = boxValue => ({
+      tagName: 'a',
+      attributes: {
+        href: boxValue.url,
+        target: '_blank',
+      },
+      textContent: `${boxValue.name} (${boxValue.size})`,
+    });
+    expect(toHTML(input, rules)).toBe(expected);
+  });
+
 });
