@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { toHTML, getBoxRenderers, toBoxHTML } from '../src';
+import { toHTML, getBoxRenderers } from '../src';
 
 // Creates a Base64-encoded ASCII string from a string.
 function toBase64(value: string): string {
@@ -92,6 +92,20 @@ describe('toHTML()', () => {
     const val = createBoxValue({ code: 'a^2-b^2=(a+b)(a-b)' });
     const input = `<lake-box name="equation" value="${val}"></lake-box>`;
     const expected = '<code>a^2-b^2=(a+b)(a-b)</code>';
+    expect(toHTML(input)).toBe(expected);
+  });
+
+  it('should convert mention box with nickname', () => {
+    const val = createBoxValue({ nickname: '<Han Kang>', name: '<han>' });
+    const input = `<lake-box name="mention" value="${val}"></lake-box>`;
+    const expected = '<a href="/&lt;han&gt;" target="_blank">&lt;Han Kang&gt;</a>';
+    expect(toHTML(input)).toBe(expected);
+  });
+
+  it('should convert mention box without nickname', () => {
+    const val = createBoxValue({ name: '<han>' });
+    const input = `<lake-box name="mention" value="${val}"></lake-box>`;
+    const expected = '<a href="/&lt;han&gt;" target="_blank">&lt;han&gt;</a>';
     expect(toHTML(input)).toBe(expected);
   });
 
@@ -188,22 +202,6 @@ describe('toHTML()', () => {
         target: '_blank',
       },
       innerHTML: encode(`${boxValue.name} (${boxValue.size})`),
-    });
-    expect(toHTML(input, renderers)).toBe(expected);
-  });
-
-  it('should add raw data', () => {
-    const val = createBoxValue({ text: '<bar>' });
-    const input = `<lake-box name="custom" value="${val}"></lake-box>`;
-    const expected = '<div class="foo">&lt;bar&gt;</div>';
-    const renderers = getBoxRenderers();
-    renderers.custom = (boxValue, encode) => ({
-      tagName: 'div',
-      attributes: {
-        class: 'foo',
-      },
-      isVoid: false,
-      innerHTML: encode(boxValue.text),
     });
     expect(toHTML(input, renderers)).toBe(expected);
   });

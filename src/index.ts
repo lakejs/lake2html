@@ -85,6 +85,15 @@ export function getBoxRenderers(): BoxRenderers {
       innerHTML: boxValue.code,
     }),
 
+    mention: (boxValue, encode) => ({
+      tagName: 'a',
+      attributes: {
+        href: `/${boxValue.name}`,
+        target: '_blank',
+      },
+      innerHTML: encode(boxValue.nickname ?? boxValue.name),
+    }),
+
     video: boxValue => ({
       tagName: 'iframe',
       attributes: {
@@ -176,7 +185,7 @@ function serializeAttributes(attrs: AttributeMap): string {
 /**
  * Serializes a BoxHTMLNode object into a standard HTML string.
  */
-export function toBoxHTML(node: BoxHTMLNode): string {
+function toBoxHTML(node: BoxHTMLNode): string {
   let result = `<${node.tagName}`;
   if (node.attributes) {
     result += ` ${serializeAttributes(node.attributes)}`;
